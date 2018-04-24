@@ -1,5 +1,6 @@
 package ru.topjava.lunchvote.repository.jdbc;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
 import ru.topjava.lunchvote.model.Restaurant;
@@ -23,8 +24,6 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     @Override
     public Restaurant save(Restaurant restaurant) {
         PreparedStatement statement = null;
-        ResultSet rs = null;
-        int id = 0;
 
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
@@ -46,14 +45,11 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                 statement  = connection.prepareStatement("UPDATE restaurant SET name=? WHERE id=?");
                 statement.setString(1, restaurant.getName());
                 statement.setInt(2, restaurant.getId());
-                rs = statement.executeQuery();
-                List<Restaurant> restaurants = getRestaurantsFromRs(rs);
-                restaurant =  restaurants != null ? DataAccessUtils.singleResult(restaurants) : null;
+                if(statement.executeUpdate() == 0) return null;
             }
-
-            connection.commit();
         }
         catch (SQLException e) {
+            restaurant = null;
             e.printStackTrace();
             try {
                 connection.rollback();
@@ -64,14 +60,13 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         }
         finally {
             try {
-                if (connection != null) {
-                    statement.close();
-                    connection.close();
-                }
+                connection.commit();
             }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
+            catch (SQLException e) {}
+
+            DbUtils.closeQuietly(connection);
+            DbUtils.closeQuietly(statement);
+
         }
         return restaurant;
     }
@@ -88,16 +83,10 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         catch (SQLException e) {
             e.printStackTrace();
         }
-        finally {
-            try {
-                if (connection != null) {
-                    statement.close();
-                    connection.close();
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
+        finally
+        {
+            DbUtils.closeQuietly(statement);
+            DbUtils.closeQuietly(connection);
         }
         return false;
     }
@@ -105,7 +94,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     @Override
     public Restaurant get(int id) {
         PreparedStatement statement = null;
-        ResultSet rs;
+        ResultSet rs = null;
         List<Restaurant> restaurants = null;
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
@@ -118,15 +107,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             e.printStackTrace();
         }
         finally {
-            try {
-                if (connection != null) {
-                    statement.close();
-                    connection.close();
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
+            DbUtils.closeQuietly(connection, statement, rs);
         }
         return restaurants != null ? DataAccessUtils.singleResult(restaurants) : null;
     }
@@ -146,18 +127,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             e.printStackTrace();
         }
         finally {
-            try {
-                if (connection != null) {
-                    statement.close();
-                    connection.close();
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
-
+            DbUtils.closeQuietly(connection, statement, rs);
         }
-
         return restaurants;
     }
 
@@ -179,6 +150,5 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             }
             return restaurants;
         }
-
     }
 }

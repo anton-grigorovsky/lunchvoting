@@ -1,6 +1,7 @@
 package ru.topjava.lunchvote.service;
 
 import ru.topjava.lunchvote.model.Restaurant;
+import ru.topjava.lunchvote.util.exception.NotFoundException;
 
 import java.util.List;
 
@@ -11,11 +12,11 @@ public interface RestaurantService {
 
     Restaurant create(Restaurant restaurant);
 
-    Restaurant get(int id);
+    Restaurant get(int id) throws NotFoundException;
 
-    boolean delete(int id);
+    void delete(int id) throws NotFoundException;
 
-    Restaurant update(Restaurant restaurant);
+    Restaurant update(Restaurant restaurant) throws NotFoundException;
 
     List<Restaurant> getAll();
 

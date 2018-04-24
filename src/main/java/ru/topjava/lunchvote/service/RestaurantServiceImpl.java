@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.repository.RestaurantRepository;
+import static ru.topjava.lunchvote.util.ValidationUtil.checkNotFoundWithId;
 
 import java.util.List;
 
@@ -23,17 +24,17 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public Restaurant get(int id) {
-        return repository.get(id);
+        return checkNotFoundWithId(repository.get(id), id);
     }
 
     @Override
-    public boolean delete(int id) {
-        return repository.delete(id);
+    public void delete(int id) {
+        checkNotFoundWithId(repository.delete(id), id);
     }
 
     @Override
     public Restaurant update(Restaurant restaurant) {
-        return repository.save(restaurant);
+        return checkNotFoundWithId(repository.save(restaurant), restaurant.getId());
     }
 
     @Override
