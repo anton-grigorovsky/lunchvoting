@@ -7,6 +7,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.service.RestaurantService;
 import ru.topjava.lunchvote.util.exception.NotFoundException;
@@ -30,7 +31,7 @@ public class RestaurantServiceImplTest {
 
     @Test
     public void get() {
-        Restaurant actual = service.get(RESTAURANT1_ID);
+        Restaurant actual = service.get(RESTAURANT_ADDRESS_IDS + 4);
         assertMatch(RESTAURANT1, actual);
     }
 
@@ -51,20 +52,25 @@ public class RestaurantServiceImplTest {
     public void  update() {
         Restaurant updated = getUpdated();
         service.update(updated);
-        assertMatch(service.get(RESTAURANT1_ID), updated);
+        assertMatch(service.get(RESTAURANT_ADDRESS_IDS + 4), updated);
 
     }
 
     @Test
     public void  delete() {
-        service.delete(RESTAURANT1_ID);
+        service.delete(RESTAURANT1);
         assertMatch(service.getAll(), RESTAURANT2, RESTAURANT3, RESTAURANT4);
 
     }
 
     @Test(expected = NotFoundException.class)
     public void deleteNotFound() {
-        service.delete(1);
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(1);
+        Address address = new Address();
+        address.setId(2);
+        restaurant.setAddress(address);
+        service.delete(restaurant);
     }
 
     @Test(expected = NotFoundException.class)

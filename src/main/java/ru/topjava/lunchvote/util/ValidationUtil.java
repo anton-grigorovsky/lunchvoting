@@ -7,7 +7,7 @@ import ru.topjava.lunchvote.util.exception.NotFoundException;
  */
 public class ValidationUtil {
 
-    public static void checkNotFoundWithId(boolean found, int id) {
+    public static void checkNotFoundWithId(boolean found, Integer id) {
         checkNotFound(found, "id=" + id);
     }
 

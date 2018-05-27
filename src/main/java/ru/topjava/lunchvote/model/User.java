@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * Created by Антон on 28.03.2018.
  */
-public class User extends AbstractBaseEntity {
+public class User extends NamedBaseEntity {
     private String email;
     private String password;
     private Set<Role> roles;

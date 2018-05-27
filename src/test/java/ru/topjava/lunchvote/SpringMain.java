@@ -2,6 +2,7 @@ package ru.topjava.lunchvote;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.service.RestaurantService;
 
@@ -14,7 +15,7 @@ public class SpringMain {
             RestaurantService service = appCtx.getBean(RestaurantService.class);
             System.out.println("=========================================================");
 
-            service.create(new Restaurant(null, "dfsdf"));
+            service.create(new Restaurant(null, "dfsdf", new Address(null, "СПб", "ул. Ленина", 12)));
             System.out.println("=========================================================");
         }
     }

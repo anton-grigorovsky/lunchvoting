@@ -1,13 +1,12 @@
 package ru.topjava.lunchvote.model;
 
 /**
- * Created by Антон on 28.03.2018.
+ * Created by Антон on 27.05.2018.
  */
-public abstract  class AbstractBaseEntity {
+public class BaseEntity {
     public static final int START_SEQ = 100000;
 
     protected Integer id;
-    protected String name;
 
     public Integer getId() {
         return id;
@@ -17,21 +16,12 @@ public abstract  class AbstractBaseEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public BaseEntity() {
+
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public AbstractBaseEntity(Integer id, String name) {
+    public BaseEntity(Integer id) {
         this.id = id;
-        this.name = name;
-    }
-
-    public AbstractBaseEntity() {
-
     }
 
     public boolean isNew() {
@@ -43,7 +33,7 @@ public abstract  class AbstractBaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AbstractBaseEntity that = (AbstractBaseEntity) o;
+        NamedBaseEntity that = (NamedBaseEntity) o;
 
         return id != null ? id.equals(that.id) : that.id == null;
     }

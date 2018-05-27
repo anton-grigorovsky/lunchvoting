@@ -1,15 +1,26 @@
 package ru.topjava.lunchvote.model;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Created by Антон on 28.03.2018.
  */
 public class VoteNote {
+
     private LocalDate localDate;
-    private Set<User> users;
     private Restaurant restaurant;
+    private User user;
+
+    public VoteNote() {
+    }
+
+    public VoteNote(LocalDate localDate, Restaurant restaurant, User user) {
+        this.localDate = localDate;
+        this.restaurant = restaurant;
+        this.user = user;
+    }
 
     public LocalDate getLocalDate() {
         return localDate;
@@ -27,11 +38,11 @@ public class VoteNote {
         this.restaurant = restaurant;
     }
 
-    public Set<User> getUsers() {
-        return users;
+    public User getUser() {
+        return user;
     }
 
-    public void setUsers(Set<User> users) {
-        this.users = users;
+    public void setUser(User user) {
+        this.user = user;
     }
 }

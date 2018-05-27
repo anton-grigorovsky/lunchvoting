@@ -3,8 +3,10 @@ package ru.topjava.lunchvote.model;
 /**
  * Created by Антон on 24.04.2018.
  */
-public class Dish extends AbstractBaseEntity {
+public class Dish extends NamedBaseEntity {
+
     private double price;
+
     private Restaurant restaurant;
 
     public double getPrice() {

@@ -3,6 +3,7 @@ package ru.topjava.lunchvote.repository.jdbc;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
+import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.repository.RestaurantRepository;
 
@@ -28,25 +29,50 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
             connection.setAutoCommit(false);
-            if(restaurant.isNew()) {
-                statement = connection.prepareStatement("INSERT INTO restaurant (name) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-                statement.setString(1, restaurant.getName());
+
+            Address address = restaurant.getAddress();
+            if(!isAddressExists(address))
+            {
+                statement = connection.prepareStatement("INSERT INTO address (city, street, building) VALUES (?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+                statement.setString(1, address.getCity());
+                statement.setString(2, address.getStreet());
+                statement.setInt(3, address.getBuilding());
                 statement.executeUpdate();
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if(generatedKeys.next()){
-                    restaurant.setId(generatedKeys.getInt(1));
+                ResultSet generatedAddressKey = statement.getGeneratedKeys();
+
+                if(generatedAddressKey.next()){
+                    address.setId(generatedAddressKey.getInt(1));
                 }
                 else {
-                    throw new SQLException("Creating user failed, no ID obtained.");
+                    throw new SQLException("Creating address failed, no ID obtained.");
                 }
 
+                DbUtils.close(generatedAddressKey);
+                DbUtils.close(statement);
+            }
+
+            if(restaurant.isNew()) {
+                statement = connection.prepareStatement("INSERT INTO restaurants (name, address_id) VALUES (?, ?);", Statement.RETURN_GENERATED_KEYS);
+                statement.setString(1, restaurant.getName());
+                statement.setInt(2, address.getId());
+                statement.executeUpdate();
+                ResultSet generatedRestaurantKey = statement.getGeneratedKeys();
+                if(generatedRestaurantKey.next()) {
+                    restaurant.setId(generatedRestaurantKey.getInt(1));
+                }
+                else {
+                    throw new SQLException("Creating restaurant failed, no ID obtained.");
+                }
+                DbUtils.close(generatedRestaurantKey);
             }
             else {
-                statement  = connection.prepareStatement("UPDATE restaurant SET name=? WHERE id=?");
+                statement  = connection.prepareStatement("UPDATE restaurants SET name=?, address_id=?  WHERE id=?;");
                 statement.setString(1, restaurant.getName());
-                statement.setInt(2, restaurant.getId());
+                statement.setInt(2, address.getId());
+                statement.setInt(3, restaurant.getId());
                 if(statement.executeUpdate() == 0) return null;
             }
+            connection.commit();
         }
         catch (SQLException e) {
             restaurant = null;
@@ -59,26 +85,33 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             }
         }
         finally {
-            try {
-                connection.commit();
-            }
-            catch (SQLException e) {}
-
-            DbUtils.closeQuietly(connection);
             DbUtils.closeQuietly(statement);
-
+            DbUtils.closeQuietly(connection);
         }
         return restaurant;
     }
 
     @Override
-    public boolean delete(int id) {
+    public boolean delete(Restaurant restaurant) {
         PreparedStatement statement = null;
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
-            statement = connection.prepareStatement("DELETE FROM restaurant WHERE id=?");
-            statement.setInt(1, id);
-            return statement.executeUpdate()!=0;
+            connection.setAutoCommit(false);
+            statement = connection.prepareStatement("DELETE FROM restaurants WHERE id=?;");
+            statement.setInt(1, restaurant.getId());
+            int updatedRows = statement.executeUpdate();
+            DbUtils.close(statement);
+
+            if(!isAddressUsed(restaurant.getAddress()))
+            {
+                statement = connection.prepareStatement("DELETE FROM address WHERE id=?;");
+                statement.setInt(1, restaurant.getAddress().getId());
+            }
+            connection.commit();
+            DbUtils.close(statement);
+            DbUtils.close(connection);
+
+            return updatedRows!=0;
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -98,7 +131,8 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         List<Restaurant> restaurants = null;
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
-            statement = connection.prepareStatement("SELECT * FROM restaurant WHERE id=? ");
+            statement = connection.prepareStatement("SELECT * FROM restaurants r INNER JOIN address a " +
+                    "ON r.address_id=a.id WHERE r.id=?;");
             statement.setInt(1, id);
             rs = statement.executeQuery();
             restaurants = getRestaurantsFromRs(rs);
@@ -120,7 +154,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         try {
             connection = DriverManager.getConnection(URL, NAME, PASSWORD);
             statement = connection.createStatement();
-            rs = statement.executeQuery("SELECT * FROM restaurant");
+            rs = statement.executeQuery("SELECT * FROM restaurants r INNER JOIN address a ON r.address_id=a.id;");
             restaurants = getRestaurantsFromRs(rs);
         }
         catch (SQLException e) {
@@ -143,6 +177,12 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                     Restaurant restaurant = new Restaurant();
                     restaurant.setId(rs.getInt(1));
                     restaurant.setName(rs.getString(2));
+                    Address address = new Address();
+                    address.setId(rs.getInt(4));
+                    address.setCity(rs.getString(5));
+                    address.setStreet(rs.getString(6));
+                    address.setBuilding(rs.getInt(7));
+                    restaurant.setAddress(address);
                     restaurants.add(restaurant);
                 }
             } catch (SQLException e) {
@@ -150,5 +190,60 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             }
             return restaurants;
         }
+    }
+
+    private boolean isAddressUsed(Address address)
+    {
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try {
+            statement = connection.prepareStatement("SELECT COUNT(address_id) FROM restaurants WHERE address_id=?");
+            statement.setInt(1, address.getId());
+            rs = statement.executeQuery();
+
+            if(rs.next() && rs.getInt(1) > 0)
+            {
+                return true;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(statement);
+        }
+        return false;
+    }
+
+    private boolean isAddressExists(Address address)
+    {
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        try
+        {
+            statement = connection.prepareStatement("SELECT * FROM address WHERE city=? AND street=? AND building=?;");
+            statement.setString(1, address.getCity());
+            statement.setString(2, address.getStreet());
+            statement.setInt(3, address.getBuilding());
+
+            rs = statement.executeQuery();
+
+            if(rs.next())
+            {
+                address.setId(rs.getInt(1));
+                return true;
+            }
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+        finally {
+            DbUtils.closeQuietly(rs);
+            DbUtils.closeQuietly(statement);
+        }
+        return false;
     }
 }
