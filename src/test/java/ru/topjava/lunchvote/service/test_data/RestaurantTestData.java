@@ -1,4 +1,4 @@
-package ru.topjava.lunchvote;
+package ru.topjava.lunchvote.service.test_data;
 
 import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Restaurant;

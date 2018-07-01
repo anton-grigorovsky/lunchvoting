@@ -28,8 +28,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public void delete(Restaurant restaurant) {
-        checkNotFoundWithId(repository.delete(restaurant), restaurant.getId());
+    public void delete(int id) {
+        checkNotFoundWithId(repository.delete(id), id);
     }
 
     @Override

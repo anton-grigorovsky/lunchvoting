@@ -9,9 +9,9 @@ import java.util.List;
  */
 public interface UserRepository {
 
-    public User get(int id);
-    public List<User> getAll();
-    public User getByEmail();
-    public boolean delete(int id);
-    public User save(User user);
+    User get(int id);
+    List<User> getAll();
+    User getByEmail(String email);
+    boolean delete(int id);
+    User save(User user);
 }

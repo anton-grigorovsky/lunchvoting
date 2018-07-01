@@ -7,70 +7,61 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import ru.topjava.lunchvote.model.Address;
-import ru.topjava.lunchvote.model.Restaurant;
-import ru.topjava.lunchvote.service.RestaurantService;
+import ru.topjava.lunchvote.model.User;
+import ru.topjava.lunchvote.service.UserService;
 import ru.topjava.lunchvote.util.exception.NotFoundException;
 
-import static ru.topjava.lunchvote.service.test_data.RestaurantTestData.*;
+import static ru.topjava.lunchvote.service.test_data.UserTestData.*;
 
 /**
- * Created by Антон on 03.04.2018.
+ * Created by Антон on 30.06.2018.
  */
-
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
         "classpath:spring/spring-db.xml"
 })
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 @RunWith(SpringJUnit4ClassRunner.class)
-public class RestaurantServiceImplTest {
+public class UserServiceImplTest {
     @Autowired
-    private RestaurantService service;
-
+    private UserService service;
 
     @Test
     public void get() {
-        Restaurant actual = service.get(RESTAURANT_ADDRESS_IDS + 4);
-        assertMatch(RESTAURANT1, actual);
+        User actual = service.get(USER_ID);
+        assertMatch(ADMIN, actual);
     }
 
     @Test
     public void create() {
-        Restaurant created = getCreated();
+        User created = getCreated();
         service.create(created);
-        assertMatch(service.getAll(), RESTAURANT1, RESTAURANT2, RESTAURANT3, RESTAURANT4, created);
+        assertMatch(service.getAll(), ADMIN, USER_1, USER_2, created);
     }
-
     @Test
     public void  getAll() {
-        assertMatch(service.getAll(), RESTAURANTS);
+        assertMatch(service.getAll(), USERS);
 
     }
 
     @Test
     public void  update() {
-        Restaurant updated = getUpdated();
+        User updated = getUpdated();
         service.update(updated);
-        assertMatch(service.get(RESTAURANT_ADDRESS_IDS + 4), updated);
+        assertMatch(service.get(USER_ID + 2), updated);
 
     }
 
     @Test
     public void  delete() {
-        service.delete(RESTAURANT1.getId());
-        assertMatch(service.getAll(), RESTAURANT2, RESTAURANT3, RESTAURANT4);
+        service.delete(USER_1.getId());
+        assertMatch(service.getAll(), ADMIN, USER_2);
 
     }
 
     @Test(expected = NotFoundException.class)
     public void deleteNotFound() {
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(1);
-        Address address = new Address();
-        address.setId(2);
-        restaurant.setAddress(address);
-        service.delete(restaurant.getId());
+        service.delete(1);
     }
 
     @Test(expected = NotFoundException.class)
@@ -80,7 +71,7 @@ public class RestaurantServiceImplTest {
 
     @Test(expected = NotFoundException.class)
     public void updateNotFound() {
-        Restaurant updated = getUpdated();
+        User updated = getUpdated();
         updated.setId(1);
         service.update(updated);
 

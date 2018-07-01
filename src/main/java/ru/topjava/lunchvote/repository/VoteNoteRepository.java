@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface VoteNoteRepository {
 
-    VoteNote save(VoteNote note, int userId);
+    VoteNote save(VoteNote note);
 
     List<VoteNote> getAll();
 

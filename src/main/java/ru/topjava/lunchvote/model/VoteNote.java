@@ -9,40 +9,49 @@ import java.util.Set;
  */
 public class VoteNote {
 
-    private LocalDate localDate;
-    private Restaurant restaurant;
-    private User user;
+    private LocalDate date;
+    private Integer restaurantId;
+    private Integer userId;
 
     public VoteNote() {
     }
 
-    public VoteNote(LocalDate localDate, Restaurant restaurant, User user) {
-        this.localDate = localDate;
-        this.restaurant = restaurant;
-        this.user = user;
+    public VoteNote(LocalDate date, Integer restaurantId, Integer userId) {
+        this.date = date;
+        this.restaurantId = restaurantId;
+        this.userId = userId;
     }
 
-    public LocalDate getLocalDate() {
-        return localDate;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setLocalDate(LocalDate localDate) {
-        this.localDate = localDate;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
-    public Restaurant getRestaurant() {
-        return restaurant;
+    public Integer getRestaurantId() {
+        return restaurantId;
     }
 
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
+    public void setRestaurantId(Integer restaurantId) {
+        this.restaurantId = restaurantId;
     }
 
-    public User getUser() {
-        return user;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "VoteNote{" +
+                "date=" + date +
+                ", restaurantId=" + restaurantId +
+                ", userId=" + userId +
+                '}';
     }
 }

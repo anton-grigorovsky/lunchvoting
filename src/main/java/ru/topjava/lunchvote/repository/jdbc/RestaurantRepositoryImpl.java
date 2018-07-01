@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.repository.RestaurantRepository;
+import ru.topjava.lunchvote.util.DBCredentials;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -16,9 +17,6 @@ import java.util.List;
  */
 @Repository
 public class RestaurantRepositoryImpl implements RestaurantRepository {
-    private static final String URL = "jdbc:hsqldb:mem:lunchvoting";
-    private static final String NAME = "sa";
-    private static final String PASSWORD = "";
 
     private Connection connection;
 
@@ -27,7 +25,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         PreparedStatement statement = null;
 
         try {
-            connection = DriverManager.getConnection(URL, NAME, PASSWORD);
+            connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             connection.setAutoCommit(false);
 
             Address address = restaurant.getAddress();
@@ -92,21 +90,24 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
     }
 
     @Override
-    public boolean delete(Restaurant restaurant) {
+    public boolean delete(int id) {
         PreparedStatement statement = null;
         try {
-            connection = DriverManager.getConnection(URL, NAME, PASSWORD);
+            connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             connection.setAutoCommit(false);
+
+            if(!isAddressUsed(id))
+            {
+                statement = connection.prepareStatement("DELETE FROM address WHERE id=" +
+                        "(SELECT address_id FROM restaurants WHERE id=?);");
+                statement.setInt(1, id);
+            }
             statement = connection.prepareStatement("DELETE FROM restaurants WHERE id=?;");
-            statement.setInt(1, restaurant.getId());
+            statement.setInt(1, id);
             int updatedRows = statement.executeUpdate();
             DbUtils.close(statement);
 
-            if(!isAddressUsed(restaurant.getAddress()))
-            {
-                statement = connection.prepareStatement("DELETE FROM address WHERE id=?;");
-                statement.setInt(1, restaurant.getAddress().getId());
-            }
+
             connection.commit();
             DbUtils.close(statement);
             DbUtils.close(connection);
@@ -130,7 +131,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         ResultSet rs = null;
         List<Restaurant> restaurants = null;
         try {
-            connection = DriverManager.getConnection(URL, NAME, PASSWORD);
+            connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             statement = connection.prepareStatement("SELECT * FROM restaurants r INNER JOIN address a " +
                     "ON r.address_id=a.id WHERE r.id=?;");
             statement.setInt(1, id);
@@ -152,7 +153,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         ResultSet rs = null;
         List<Restaurant> restaurants = null;
         try {
-            connection = DriverManager.getConnection(URL, NAME, PASSWORD);
+            connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             statement = connection.createStatement();
             rs = statement.executeQuery("SELECT * FROM restaurants r INNER JOIN address a ON r.address_id=a.id;");
             restaurants = getRestaurantsFromRs(rs);
@@ -192,16 +193,16 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         }
     }
 
-    private boolean isAddressUsed(Address address)
+    private boolean isAddressUsed(int restaurantId)
     {
-        PreparedStatement statement = null;
+        Statement statement = null;
         ResultSet rs = null;
         try {
-            statement = connection.prepareStatement("SELECT COUNT(address_id) FROM restaurants WHERE address_id=?");
-            statement.setInt(1, address.getId());
-            rs = statement.executeQuery();
+            statement = connection.createStatement();
+            rs = statement.executeQuery("SELECT COUNT (address_id) FROM restaurants WHERE address_id = " +
+                    "(SELECT address_id FROM restaurants WHERE id=" + restaurantId +")");
 
-            if(rs.next() && rs.getInt(1) > 0)
+            if(rs.next() && rs.getInt(1) > 1)
             {
                 return true;
             }

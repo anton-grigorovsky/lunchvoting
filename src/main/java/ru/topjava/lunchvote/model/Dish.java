@@ -1,5 +1,7 @@
 package ru.topjava.lunchvote.model;
 
+import java.time.LocalDate;
+
 /**
  * Created by Антон on 24.04.2018.
  */
@@ -7,7 +9,9 @@ public class Dish extends NamedBaseEntity {
 
     private double price;
 
-    private Restaurant restaurant;
+    private Integer restaurantId;
+
+    private LocalDate date;
 
     public double getPrice() {
         return price;
@@ -17,11 +21,40 @@ public class Dish extends NamedBaseEntity {
         this.price = price;
     }
 
-    public Restaurant getRestaurant() {
-        return restaurant;
+    public Integer getRestaurantId() {
+        return restaurantId;
     }
 
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
+    public void setRestaurantId(Integer restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public Dish() {
+    }
+
+    public Dish(Integer id, String name, double price, Integer restaurantId, LocalDate date) {
+        super(id, name);
+        this.price = price;
+        this.restaurantId = restaurantId;
+        this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "Dish{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", restaurantId=" + restaurantId +
+                ", date=" + date +
+                '}';
     }
 }

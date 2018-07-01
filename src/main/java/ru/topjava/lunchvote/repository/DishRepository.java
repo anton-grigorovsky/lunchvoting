@@ -2,6 +2,7 @@ package ru.topjava.lunchvote.repository;
 
 import ru.topjava.lunchvote.model.Dish;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -9,12 +10,12 @@ import java.util.List;
  */
 public interface DishRepository {
 
-    public Dish get(int id);
+    Dish get(int id);
 
-    public Dish save(Dish dish);
+    List<Dish> save(List<Dish> dishes);
 
-    public boolean delete(int id);
+    boolean delete(int id);
 
-    public List<Dish> getAll(int restaurantId);
+    List<Dish> getByDateAndRestaurant(LocalDate date, int restaurantId);
 
 }
