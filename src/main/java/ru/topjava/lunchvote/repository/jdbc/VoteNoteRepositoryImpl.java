@@ -2,6 +2,7 @@ package ru.topjava.lunchvote.repository.jdbc;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Repository;
+import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.model.VoteNote;
 import ru.topjava.lunchvote.repository.VoteNoteRepository;
 import ru.topjava.lunchvote.util.DBCredentials;
@@ -90,9 +91,9 @@ public class VoteNoteRepositoryImpl implements VoteNoteRepository
             while (resultSet.next())
             {
                 VoteNote note = new VoteNote();
-                note.setUserId(resultSet.getInt(3));
-                note.setRestaurantId(resultSet.getInt(2));
                 note.setDate(resultSet.getDate(1).toLocalDate());
+                note.setRestaurantId(resultSet.getInt(2));
+                note.setUserId(resultSet.getInt(3));
                 notes.add(note);
             }
         }

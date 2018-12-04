@@ -15,7 +15,7 @@ public class SpringMain {
             RestaurantService service = appCtx.getBean(RestaurantService.class);
             System.out.println("=========================================================");
 
-            service.create(new Restaurant(null, "dfsdf", new Address(null, "СПб", "ул. Ленина", 12)));
+            service.create(new Restaurant(null, "dfsdf", new Address("СПб", "ул. Ленина", 12)));
             System.out.println("=========================================================");
         }
     }

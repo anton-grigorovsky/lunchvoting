@@ -1,16 +1,30 @@
 package ru.topjava.lunchvote.model;
 
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 /**
  * Created by Антон on 24.04.2018.
  */
+
+@DynamicUpdate
+@Table(name = "dishes")
 public class Dish extends NamedBaseEntity {
 
+    @NotNull
     private double price;
 
-    private Integer restaurantId;
+    @NotNull
+    private Restaurant restaurant;
 
+    @Generated(GenerationTime.INSERT)
+    @Column(updatable = false)
+    @Temporal(TemporalType.DATE)
     private LocalDate date;
 
     public double getPrice() {
@@ -21,12 +35,12 @@ public class Dish extends NamedBaseEntity {
         this.price = price;
     }
 
-    public Integer getRestaurantId() {
-        return restaurantId;
+    public Restaurant getRestaurant() {
+        return restaurant;
     }
 
-    public void setRestaurantId(Integer restaurantId) {
-        this.restaurantId = restaurantId;
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
     }
 
     public LocalDate getDate() {
@@ -40,20 +54,20 @@ public class Dish extends NamedBaseEntity {
     public Dish() {
     }
 
-    public Dish(Integer id, String name, double price, Integer restaurantId, LocalDate date) {
+    public Dish(Integer id, String name, double price, Restaurant restaurant, LocalDate date) {
         super(id, name);
         this.price = price;
-        this.restaurantId = restaurantId;
+        this.restaurant = restaurant;
         this.date = date;
     }
 
     @Override
     public String toString() {
         return "Dish{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", price=" + price +
-                ", restaurantId=" + restaurantId +
+                ", id=" + id +
+                ", restaurant=" + restaurant +
                 ", date=" + date +
                 '}';
     }

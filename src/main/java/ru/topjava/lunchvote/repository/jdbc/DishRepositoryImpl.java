@@ -2,6 +2,7 @@ package ru.topjava.lunchvote.repository.jdbc;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Repository;
+import ru.topjava.lunchvote.model.Address;
 import ru.topjava.lunchvote.model.Dish;
 import ru.topjava.lunchvote.model.Restaurant;
 import ru.topjava.lunchvote.repository.DishRepository;
@@ -48,7 +49,7 @@ public class DishRepositoryImpl implements DishRepository {
                 {
                     statement.setString(1, dish.getName());
                     statement.setDouble(2, dish.getPrice());
-                    statement.setInt(3, dish.getRestaurantId());
+                    statement.setInt(3, dish.getRestaurant().getId());
                     statement.addBatch();
                 }
                 statement.executeBatch();
@@ -107,7 +108,8 @@ public class DishRepositoryImpl implements DishRepository {
         try
         {
             connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
-            statement = connection.prepareStatement("SELECT * FROM dishes WHERE restaurant_id=? AND date=? ORDER BY id");
+            statement = connection.prepareStatement("SELECT * FROM dishes d INNER JOIN restaurants r ON d.restaurant_id=r.id " +
+                    "WHERE d.restaurant_id=? AND date=? ORDER BY d.id");
             statement.setInt(1, restaurantId);
             statement.setString(2, date.toString());
             resultSet = statement.executeQuery();
@@ -115,7 +117,7 @@ public class DishRepositoryImpl implements DishRepository {
         }
         catch (SQLException e)
         {
-
+            throw new RuntimeException(e);
         }
         finally
         {
@@ -135,8 +137,16 @@ public class DishRepositoryImpl implements DishRepository {
                     dish.setId(resultSet.getInt(1));
                     dish.setName(resultSet.getString(2));
                     dish.setPrice(resultSet.getDouble(3));
-                    dish.setRestaurantId(resultSet.getInt(4));
                     dish.setDate(resultSet.getDate(5).toLocalDate());
+                    Restaurant restaurant= new Restaurant();
+                    restaurant.setId(resultSet.getInt(6));
+                    restaurant.setName(resultSet.getString(7));
+                    Address address = new Address();
+                    address.setCity(resultSet.getString(8));
+                    address.setStreet(resultSet.getString(9));
+                    address.setBuilding(resultSet.getInt(10));
+                    restaurant.setAddress(address);
+                    dish.setRestaurant(restaurant);
                     dishes.add(dish);
                 }
             } catch (SQLException e) {

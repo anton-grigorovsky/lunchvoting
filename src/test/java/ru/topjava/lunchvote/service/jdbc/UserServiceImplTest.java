@@ -3,6 +3,7 @@ package ru.topjava.lunchvote.service.jdbc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
@@ -21,6 +22,7 @@ import static ru.topjava.lunchvote.service.test_data.UserTestData.*;
         "classpath:spring/spring-db.xml"
 })
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
+@ActiveProfiles("jdbc")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UserServiceImplTest {
     @Autowired

@@ -3,6 +3,7 @@ package ru.topjava.lunchvote.service.jdbc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
@@ -23,6 +24,7 @@ import static ru.topjava.lunchvote.service.test_data.RestaurantTestData.*;
         "classpath:spring/spring-db.xml"
 })
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
+@ActiveProfiles("jdbc")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class RestaurantServiceImplTest {
     @Autowired
@@ -31,7 +33,7 @@ public class RestaurantServiceImplTest {
 
     @Test
     public void get() {
-        Restaurant actual = service.get(RESTAURANT_ADDRESS_IDS + 4);
+        Restaurant actual = service.get(RESTAURANT_IDS);
         assertMatch(RESTAURANT1, actual);
     }
 
@@ -52,7 +54,7 @@ public class RestaurantServiceImplTest {
     public void  update() {
         Restaurant updated = getUpdated();
         service.update(updated);
-        assertMatch(service.get(RESTAURANT_ADDRESS_IDS + 4), updated);
+        assertMatch(service.get(RESTAURANT_IDS), updated);
 
     }
 
@@ -68,7 +70,6 @@ public class RestaurantServiceImplTest {
         Restaurant restaurant = new Restaurant();
         restaurant.setId(1);
         Address address = new Address();
-        address.setId(2);
         restaurant.setAddress(address);
         service.delete(restaurant.getId());
     }

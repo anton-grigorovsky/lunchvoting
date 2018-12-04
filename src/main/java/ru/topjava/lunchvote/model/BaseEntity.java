@@ -1,11 +1,19 @@
 package ru.topjava.lunchvote.model;
 
+import ru.topjava.lunchvote.util.Constants;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 /**
  * Created by Антон on 27.05.2018.
  */
+@MappedSuperclass
 public class BaseEntity {
-    public static final int START_SEQ = 100000;
 
+    @Id
+    @GeneratedValue(generator = Constants.ID_GENERATOR)
     protected Integer id;
 
     public Integer getId() {

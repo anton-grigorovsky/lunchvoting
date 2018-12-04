@@ -1,12 +1,17 @@
 package ru.topjava.lunchvote.model;
 
-import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by Антон on 28.03.2018.
  */
+@Entity
+@Table(name = "restaurants")
 public class Restaurant extends NamedBaseEntity {
 
+    @NotNull
     private Address address;
 
     public Restaurant() {

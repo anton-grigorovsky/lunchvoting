@@ -1,16 +1,33 @@
 package ru.topjava.lunchvote.model;
 
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+import ru.topjava.lunchvote.model.hibernate.VoteNoteKey;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Антон on 28.03.2018.
  */
+@Entity
+@Table(name = "vote_notes")
+@IdClass(VoteNoteKey.class)
 public class VoteNote {
 
+    @Id
+    @Column(insertable = false, updatable = false)
+    @NotNull
     private LocalDate date;
+
+    @NotNull
+    @Column(name = "restaurant_id")
     private Integer restaurantId;
+
+    @Id
+    @NotNull
+    @Column(name = "user_id")
     private Integer userId;
 
     public VoteNote() {
@@ -53,5 +70,10 @@ public class VoteNote {
                 ", restaurantId=" + restaurantId +
                 ", userId=" + userId +
                 '}';
+    }
+
+    public VoteNoteKey getKey()
+    {
+        return new VoteNoteKey(date, userId);
     }
 }

@@ -1,18 +1,28 @@
 package ru.topjava.lunchvote.model;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+
 /**
  * Created by Антон on 27.05.2018.
  */
-public class Address extends BaseEntity{
+@Embeddable
+@Table
+public class Address {
+    @NotBlank
     private String city;
+
+    @NotBlank
     private String street;
+
+    @NotBlank
     private Integer building;
 
     public Address() {
     }
 
-    public Address(Integer id, String city, String street, Integer building) {
-        super(id);
+    public Address(String city, String street, Integer building) {
         this.city = city;
         this.street = street;
         this.building = building;

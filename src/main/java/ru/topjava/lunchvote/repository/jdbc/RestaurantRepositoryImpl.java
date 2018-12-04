@@ -27,32 +27,15 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         try {
             connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             connection.setAutoCommit(false);
-
             Address address = restaurant.getAddress();
-            if(!isAddressExists(address))
-            {
-                statement = connection.prepareStatement("INSERT INTO address (city, street, building) VALUES (?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
-                statement.setString(1, address.getCity());
-                statement.setString(2, address.getStreet());
-                statement.setInt(3, address.getBuilding());
-                statement.executeUpdate();
-                ResultSet generatedAddressKey = statement.getGeneratedKeys();
-
-                if(generatedAddressKey.next()){
-                    address.setId(generatedAddressKey.getInt(1));
-                }
-                else {
-                    throw new SQLException("Creating address failed, no ID obtained.");
-                }
-
-                DbUtils.close(generatedAddressKey);
-                DbUtils.close(statement);
-            }
-
             if(restaurant.isNew()) {
-                statement = connection.prepareStatement("INSERT INTO restaurants (name, address_id) VALUES (?, ?);", Statement.RETURN_GENERATED_KEYS);
+
+                DbUtils.close(statement);
+                statement = connection.prepareStatement("INSERT INTO restaurants (name, city, street, building) VALUES (?, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
                 statement.setString(1, restaurant.getName());
-                statement.setInt(2, address.getId());
+                statement.setString(2, address.getCity());
+                statement.setString(3, address.getStreet());
+                statement.setInt(4, address.getBuilding());
                 statement.executeUpdate();
                 ResultSet generatedRestaurantKey = statement.getGeneratedKeys();
                 if(generatedRestaurantKey.next()) {
@@ -61,14 +44,17 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                 else {
                     throw new SQLException("Creating restaurant failed, no ID obtained.");
                 }
-                DbUtils.close(generatedRestaurantKey);
             }
             else {
-                statement  = connection.prepareStatement("UPDATE restaurants SET name=?, address_id=?  WHERE id=?;");
+                statement = connection.prepareStatement("UPDATE restaurants SET name=?, city=?, street=?, building=? WHERE id=?");
                 statement.setString(1, restaurant.getName());
-                statement.setInt(2, address.getId());
-                statement.setInt(3, restaurant.getId());
-                if(statement.executeUpdate() == 0) return null;
+                statement.setString(2, address.getCity());
+                statement.setString(3, address.getStreet());
+                statement.setInt(4, address.getBuilding());
+                statement.setInt(5, restaurant.getId());
+                if(statement.executeUpdate() == 0)
+                    throw new SQLException("Updating restaurant failed.");
+
             }
             connection.commit();
         }
@@ -95,22 +81,10 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         try {
             connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             connection.setAutoCommit(false);
-
-            if(!isAddressUsed(id))
-            {
-                statement = connection.prepareStatement("DELETE FROM address WHERE id=" +
-                        "(SELECT address_id FROM restaurants WHERE id=?);");
-                statement.setInt(1, id);
-            }
             statement = connection.prepareStatement("DELETE FROM restaurants WHERE id=?;");
             statement.setInt(1, id);
             int updatedRows = statement.executeUpdate();
-            DbUtils.close(statement);
-
-
             connection.commit();
-            DbUtils.close(statement);
-            DbUtils.close(connection);
 
             return updatedRows!=0;
         }
@@ -132,8 +106,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         List<Restaurant> restaurants = null;
         try {
             connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
-            statement = connection.prepareStatement("SELECT * FROM restaurants r INNER JOIN address a " +
-                    "ON r.address_id=a.id WHERE r.id=?;");
+            statement = connection.prepareStatement("SELECT * FROM restaurants r WHERE r.id=?;");
             statement.setInt(1, id);
             rs = statement.executeQuery();
             restaurants = getRestaurantsFromRs(rs);
@@ -155,7 +128,7 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
         try {
             connection = DriverManager.getConnection(DBCredentials.URL, DBCredentials.NAME, DBCredentials.PASSWORD);
             statement = connection.createStatement();
-            rs = statement.executeQuery("SELECT * FROM restaurants r INNER JOIN address a ON r.address_id=a.id;");
+            rs = statement.executeQuery("SELECT * FROM restaurants;");
             restaurants = getRestaurantsFromRs(rs);
         }
         catch (SQLException e) {
@@ -179,10 +152,9 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
                     restaurant.setId(rs.getInt(1));
                     restaurant.setName(rs.getString(2));
                     Address address = new Address();
-                    address.setId(rs.getInt(4));
-                    address.setCity(rs.getString(5));
-                    address.setStreet(rs.getString(6));
-                    address.setBuilding(rs.getInt(7));
+                    address.setCity(rs.getString(3));
+                    address.setStreet(rs.getString(4));
+                    address.setBuilding(rs.getInt(5));
                     restaurant.setAddress(address);
                     restaurants.add(restaurant);
                 }
@@ -191,60 +163,5 @@ public class RestaurantRepositoryImpl implements RestaurantRepository {
             }
             return restaurants;
         }
-    }
-
-    private boolean isAddressUsed(int restaurantId)
-    {
-        Statement statement = null;
-        ResultSet rs = null;
-        try {
-            statement = connection.createStatement();
-            rs = statement.executeQuery("SELECT COUNT (address_id) FROM restaurants WHERE address_id = " +
-                    "(SELECT address_id FROM restaurants WHERE id=" + restaurantId +")");
-
-            if(rs.next() && rs.getInt(1) > 1)
-            {
-                return true;
-            }
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(statement);
-        }
-        return false;
-    }
-
-    private boolean isAddressExists(Address address)
-    {
-        PreparedStatement statement = null;
-        ResultSet rs = null;
-        try
-        {
-            statement = connection.prepareStatement("SELECT * FROM address WHERE city=? AND street=? AND building=?;");
-            statement.setString(1, address.getCity());
-            statement.setString(2, address.getStreet());
-            statement.setInt(3, address.getBuilding());
-
-            rs = statement.executeQuery();
-
-            if(rs.next())
-            {
-                address.setId(rs.getInt(1));
-                return true;
-            }
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        finally {
-            DbUtils.closeQuietly(rs);
-            DbUtils.closeQuietly(statement);
-        }
-        return false;
     }
 }

@@ -8,7 +8,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static ru.topjava.lunchvote.model.BaseEntity.START_SEQ;
+import static ru.topjava.lunchvote.util.Constants.START_SEQ;
 
 /**
  * Created by Антон on 30.06.2018.

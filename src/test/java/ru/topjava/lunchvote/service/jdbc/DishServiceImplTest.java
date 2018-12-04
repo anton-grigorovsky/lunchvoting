@@ -3,6 +3,7 @@ package ru.topjava.lunchvote.service.jdbc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
@@ -26,17 +27,18 @@ import static ru.topjava.lunchvote.service.test_data.DishTestData.*;
         "classpath:spring/spring-db.xml"
 })
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
+@ActiveProfiles("jdbc")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class DishServiceImplTest {
     @Autowired
-    DishService service;
+    private DishService service;
 
     @Test
     public void create()
     {
         List<Dish> dishes = DishTestData.getCreated();
         service.create(dishes);
-        assertMatch(service.getByDateAndRestaurant(LocalDate.now(), 100008) ,dishes);
+        assertMatch(service.getByDateAndRestaurant(LocalDate.now(), 100004) ,dishes);
     }
 
     @Test
@@ -44,21 +46,21 @@ public class DishServiceImplTest {
     {
         Dish updated = DishTestData.getUpdated();
         service.update(updated);
-        assertMatch(service.getByDateAndRestaurant(LocalDate.of(2015, 5, 31), 100008), DISH1, DISH2, updated);
+        assertMatch(service.getByDateAndRestaurant(LocalDate.of(2015, 5, 31), 100004), DISH1, DISH2, updated);
     }
 
     @Test
     public void delete()
     {
         service.delete(DISH_IDS);
-        assertMatch(service.getByDateAndRestaurant(LocalDate.of(2015, 5, 31), 100008), DISH2, DISH3);
+        assertMatch(service.getByDateAndRestaurant(LocalDate.of(2015, 5, 31), 100004), DISH2, DISH3);
     }
 
     @Test
     public void getByDateAndRestaurant()
     {
         List<Dish> expected = DISHES;
-        List<Dish> actual = service.getByDateAndRestaurant(LocalDate.of(2015, 5,31), 100008);
+        List<Dish> actual = service.getByDateAndRestaurant(LocalDate.of(2015, 5,31), 100004);
         assertMatch(actual, expected);
     }
 

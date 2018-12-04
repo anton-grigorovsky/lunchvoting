@@ -13,7 +13,7 @@
        http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd">
 
-<!--no pooling-->
+
     <context:property-placeholder location="classpath:db/hsqldb.properties" system-properties-mode="OVERRIDE"/>
 
     <jdbc:initialize-database data-source="dataSource" enabled="${database.init}">
@@ -21,13 +21,25 @@
         <jdbc:script encoding="utf-8" location="classpath:db/${jdbc.populateLocation}"/>
     </jdbc:initialize-database>
 
-    <context:component-scan base-package="ru.topjava.**.repository.jdbc"/>
-
     <bean id="dataSource"
           class="org.springframework.jdbc.datasource.DriverManagerDataSource"
           p:driverClassName="org.hsqldb.jdbcDriver"
           p:url="${database.url}"
           p:username="${database.username}"
           p:password="${database.password}"/>
+
+    <beans profile="jdbc">
+        <context:component-scan base-package="ru.topjava.**.repository.jdbc"/>
+    </beans>
+
+    <beans profile="hibernate">
+        <context:component-scan base-package="ru.topjava.**.repository.hibernate"/>
+        <bean id="entityManagerFactory" class="ru.topjava.lunchvote.util.HibernateUtils" factory-method="getEntityManagerFactory"/>
+        <!--<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+              p:entityManagerFactory-ref="entityManagerFactory"/>-->
+
+    </beans>
+
+
 
 </beans>

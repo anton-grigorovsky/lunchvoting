@@ -1,5 +1,14 @@
 package ru.topjava.lunchvote.model;
 
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
+import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Set;
@@ -7,10 +16,27 @@ import java.util.Set;
 /**
  * Created by Антон on 28.03.2018.
  */
+@Entity
+@DynamicUpdate
+@Table(name = "users")
 public class User extends NamedBaseEntity {
+    @NotBlank
+    @Email
     private String email;
+
+    @NotBlank
+    @Size(min = 6, max = 63)
     private String password;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
     private Set<Role> roles;
+
+    @Generated(GenerationTime.INSERT)
+    @Column(updatable = false)
     private LocalDateTime registered;
 
     public User() {

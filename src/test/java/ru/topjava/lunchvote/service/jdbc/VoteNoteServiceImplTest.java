@@ -3,14 +3,13 @@ package ru.topjava.lunchvote.service.jdbc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.topjava.lunchvote.model.VoteNote;
 import ru.topjava.lunchvote.service.VoteNoteService;
-
-import java.util.List;
 
 import static ru.topjava.lunchvote.service.test_data.VoteNoteTestData.*;
 
@@ -22,10 +21,11 @@ import static ru.topjava.lunchvote.service.test_data.VoteNoteTestData.*;
         "classpath:spring/spring-db.xml"
 })
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
+@ActiveProfiles("hibernate")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class VoteNoteServiceImplTest {
     @Autowired
-    VoteNoteService service;
+    private VoteNoteService service;
 
     @Test
     public void getAll()
